@@ -612,6 +612,15 @@ if [ \$USER = "oracle" ]; then
 fi
 
 TMOUT=300
+
+USER_IP=\`who -u am i | awk '{print \$NF}'|sed -e 's/[()]//g'\`
+if [ -z \$USER_IP  ]
+then
+  USER_IP="NO_client_IP"
+fi
+export HISTSIZE=4096
+export HISTTIMEFORMAT="[%Y.%m.%d %H:%M:%S]~{\${USER_IP}}~[\${USER}]  "
+
 EOF
 
   source /etc/profile
