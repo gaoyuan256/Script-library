@@ -1,4 +1,4 @@
-# system_initialization-20211202-V6.0-版本变更
+# system_initialization-20230310-V7.0-版本变更
 
 1、修改颜色输出语法
 
