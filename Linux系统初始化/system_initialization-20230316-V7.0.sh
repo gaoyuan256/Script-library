@@ -1036,17 +1036,17 @@ source /etc/profile
 [ $(id -u) -gt 0 ] && echo "请用root用户执行此脚本！" && exit 1
 
 centosVersion=$(awk '{print $(NF-1)}' /etc/redhat-release)
-VERSION=`date +%F`
+VERSION1=`date "+%Y-%m-%d %H:%M:%S"`
 
 #日志相关
 ipp=`ifconfig |grep inet|egrep -v '192.168.10.164|127.0.0.1|inet6'| awk '{print$2}'`
 #RESULTFILE="/tmp/`ifconfig |grep inet|egrep -v '192.168.10.164|127.0.0.1|inet6'| awk '{print$2}'`.txt"
 RESULTFILE="/tmp/`hostname`-`date +"%Y-%m-%d_%H-%M-%S"`.txt"
 
-function version(){
+function version1(){
 echo "################################################################################################################"
+echo "                                          系统巡检：DATE:  $VERSION1"
 echo "################################################################################################################"
-echo "系统巡检：DATE:  $VERSION"
 }
 
 function getSystemStatus() {
@@ -1075,8 +1075,8 @@ echo "语言/编码：$default_LANG"
 echo " 当前时间：$(date +'%F %T')"
 echo " 最后启动：$LastReboot"
 echo " 运行时间：$uptime"
-echo "   uptime: `uptime`"
-echo " runlevel: `runlevel`"
+echo " 运行时间：`uptime`"
+echo " 运行级别：`runlevel`"
 }
 
 function getCpuStatus(){
@@ -1087,11 +1087,11 @@ Virt_CPUs=$(grep "processor" /proc/cpuinfo | wc -l)
 CPU_Kernels=$(grep "cores" /proc/cpuinfo|uniq| awk -F ': ' '{print $2}')
 CPU_Type=$(grep "model name" /proc/cpuinfo | awk -F ': ' '{print $2}' | sort | uniq)
 CPU_Arch=$(uname -m)
-echo "物理CPU个数:$Physical_CPUs"
-echo "逻辑CPU个数:$Virt_CPUs"
-echo "每CPU核心数:$CPU_Kernels"
-echo "    CPU型号:$CPU_Type"
-echo "    CPU架构:$CPU_Arch"
+echo "物理CPU个数：$Physical_CPUs"
+echo "逻辑CPU个数：$Virt_CPUs"
+echo "每CPU核心数：$CPU_Kernels"
+echo "CPU    型号：$CPU_Type"
+echo "CPU    架构：CPU_Arch"
 }
 
 function getMemStatus(){
@@ -1193,7 +1193,14 @@ echo ""
 function getulimitStatus(){
 echo ""
 echo -e "###文件打开数检查"
+
+echo -e "Root用户："
+echo "------------"
 ulimit -a
+
+echo -e "Oracle用户："
+echo "------------"
+id oracle &> /dev/null && su - oracle -c "ulimit -a"
 }
 
 
@@ -1332,6 +1339,7 @@ echo ""
 echo "密码策略检查"
 echo "------------"
 grep -v "#" /etc/login.defs | grep -E "PASS_MAX_DAYS|PASS_MIN_DAYS|PASS_MIN_LEN|PASS_WARN_AGE"
+echo ""
 cat /etc/pam.d/system-auth
 }
 
@@ -1383,6 +1391,11 @@ echo ""
 echo "/etc/sysconfig/firewalld"
 echo "-----------------------"
 cat /etc/sysconfig/firewalld 2>/dev/null
+echo ""
+
+echo -e "iptables -L状态为："
+iptables -L
+echo ""
 }
 
 function getSSHStatus(){
@@ -1576,19 +1589,22 @@ echo ""
 
 function getlimits_config(){
 echo -e "###系统限制修改检查"
-tail -20 /etc/security/limits.conf
+#tail -20 /etc/security/limits.conf
+cat /etc/security/limits.conf
 echo ""
 }
 
 function getsysctl_config(){
 echo -e "###系统内核参数检查"
-tail -25 /etc/sysctl.conf
+#tail -25 /etc/sysctl.conf
+cat /etc/sysctl.conf
 echo ""
 }
 
 function getprofile_config(){
 echo -e "###系统环境变量检查"
-tail -10 /etc/profile
+#tail -10 /etc/profile
+cat /etc/profile
 echo ""
 }
 
@@ -1626,7 +1642,7 @@ echo ""
 
 function check(){
 
-version
+version1
 getSystemStatus
 getCpuStatus
 getMemStatus
@@ -1648,6 +1664,9 @@ getFirewallStatus
 getotherStatus
 getInstalledStatus
 getother1Status
+#getHowLongAgo
+#getUserLastLogin
+#getState
 getSelinux
 getHost
 getYum
@@ -1657,6 +1676,7 @@ getsysctl_config
 getprofile_config
 getscheduler_config
 gettransparent_hugepage_config
+getscheduler_config
 #save_check
 
 }
